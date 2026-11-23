@@ -1,18 +1,60 @@
 #include <Arduino.h>
+#include <BLEMIDI_Transport.h>
+#include <hardware/BLEMIDI_ESP32_NimBLE.h>
 
-// put function declarations here:
-int myFunction(int, int);
+#include "midi_console.h"
 
-void setup() {
-  // put your setup code here, to run once:
-  int result = myFunction(2, 3);
+BLEMIDI_CREATE_INSTANCE("FBVtoMIDI", MIDI);
+
+void sendControlChange(uint8_t channel, uint8_t cc, uint8_t value)
+{
+    MIDI.sendControlChange(cc, value, channel);
 }
 
-void loop() {
-  // put your main code here, to run repeatedly:
+void sendProgramChange(uint8_t channel, uint8_t program)
+{
+    MIDI.sendProgramChange(program, channel);
 }
 
-// put function definitions here:
-int myFunction(int x, int y) {
-  return x + y;
+midi_console::Console midiConsole(sendControlChange, sendProgramChange);
+
+void onControlChange(byte channel, byte cc, byte value)
+{
+    midiConsole.onControlChange(channel, cc, value);
+}
+
+void onProgramChange(byte channel, byte program)
+{
+    midiConsole.onProgramChange(channel, program);
+}
+
+void onBleConnected()
+{
+    Serial.println("[BLE] MIDI central connected.");
+}
+
+void onBleDisconnected()
+{
+    Serial.println("[BLE] MIDI central disconnected.");
+}
+
+void setup()
+{
+    Serial.begin(115200);
+
+    BLEMIDI.setHandleConnected(onBleConnected);
+    BLEMIDI.setHandleDisconnected(onBleDisconnected);
+
+    MIDI.setHandleControlChange(onControlChange);
+    MIDI.setHandleProgramChange(onProgramChange);
+    MIDI.begin(MIDI_CHANNEL_OMNI);
+    MIDI.turnThruOff();
+
+    midiConsole.begin("BLE MIDI console ready. Advertised name: FBVtoMIDI.");
+}
+
+void loop()
+{
+    MIDI.read();
+    midiConsole.poll();
 }
