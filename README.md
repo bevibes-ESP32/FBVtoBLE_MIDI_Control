@@ -2,6 +2,8 @@
 
 Freenove ESP32-S3 BLE MIDI console for testing ToneXController commands. The board advertises the standard BLE MIDI service under the name `FBVtoMIDI`, so it can be paired with ToneXController or a BLE MIDI host on Windows/macOS.
 
+The BLE MIDI peripheral is configured for up to four simultaneous connections and resumes advertising after each connection while capacity remains. Connected clients share the MIDI stream: incoming messages from any client are received by FBVtoBLE, and outgoing messages are notified to subscribed clients.
+
 ## Serial console
 
 Open the PlatformIO monitor on the CH343 COM port at 115200 baud. Commands are processed only when Enter is pressed.

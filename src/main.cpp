@@ -31,6 +31,11 @@ void onProgramChange(byte channel, byte program)
 void onBleConnected()
 {
     Serial.println("[BLE] MIDI central connected.");
+    if (NimBLEDevice::getServer()->getConnectedCount() < CONFIG_BT_NIMBLE_MAX_CONNECTIONS &&
+        !NimBLEDevice::startAdvertising())
+    {
+        Serial.println("[BLE] Failed to restart advertising.");
+    }
 }
 
 void onBleDisconnected()
